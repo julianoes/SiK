@@ -1001,7 +1001,9 @@ tdm_init(void)
 	// tdm_build_timing_table();
 
 	// calculate how many 16usec ticks it takes to send each byte
-	ticks_per_byte = (8+(8000000UL/(air_rate*1000UL)))/16;
+	// EXPERIMENT: measured on HM-TRP, every AIR_SPEED setting sends at twice
+	// its nominal rate, so the byte time is half of what the setting says
+	ticks_per_byte = (8+(8000000UL/(air_rate*2000UL)))/16;
         ticks_per_byte++;
 
 	// calculate the minimum packet latency in 16 usec units
