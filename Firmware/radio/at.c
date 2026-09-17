@@ -352,6 +352,9 @@ at_i(void)
   case '7':
     tdm_show_rssi();
     return;
+  case '8':
+    tdm_show_counters();
+    return;
   default:
     at_error();
     return;
