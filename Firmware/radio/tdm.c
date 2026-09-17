@@ -218,7 +218,7 @@ static uint16_t flight_time_estimate(__pdata uint8_t packet_len)
 /// match the other radio and thus bring the two radios into sync
 ///
 static void
-sync_tx_windows(__pdata uint8_t packet_length)
+sync_tx_windows(__pdata uint8_t packet_length, __pdata uint16_t elapsed)
 {
   __data enum tdm_state old_state = tdm_state;
   __pdata uint16_t old_remaining = tdm_state_remaining;
@@ -242,7 +242,16 @@ sync_tx_windows(__pdata uint8_t packet_length)
       tdm_state_remaining = 1;
     } else {
       tdm_state = TDM_TRANSMIT;
-      tdm_state_remaining = trailer.window;
+      // The other radio's flight time estimate is larger than the real
+      // flight time, so trailer.window places the end of our window too
+      // early. Never let a bonus packet shorten our own window, or we
+      // change frequency while the other radio is still sending.
+      if (old_state == TDM_TRANSMIT && old_remaining > elapsed &&
+          old_remaining - elapsed > trailer.window) {
+        tdm_state_remaining = old_remaining - elapsed;
+      } else {
+        tdm_state_remaining = trailer.window;
+      }
     }
   } else {
     // we are in the other radios transmit window, our
@@ -585,7 +594,7 @@ tdm_serial_loop(void)
       } else if (trailer.window != 0) {
         // sync our transmit windows based on
         // received header
-        sync_tx_windows(len);
+        sync_tx_windows(len, tnow - last_t);
         last_t = tnow;
         
 
