@@ -81,7 +81,7 @@ def check_xiseg():
             continue
         print(os.popen("tail -n5 %s.mem"%board).read())
         print('%s %s - %u bytes available' % (name, map, xram_size-end))
-        if end >= xram_size:
+        if end > xram_size:
             print('ERROR: %s overflow %u in %s' % (name, end, map))
             error_count += 1
 
